@@ -200,28 +200,51 @@ async def main_page():
             
             async function downloadICSFile() {
                 try {
+                    console.log('Starting download...', window.extractedData);
+                    
                     const response = await fetch('/generate-ics', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(window.extractedData)
                     });
                     
+                    console.log('Response status:', response.status);
+                    console.log('Response headers:', response.headers);
+                    
                     if (response.ok) {
                         const blob = await response.blob();
+                        console.log('Blob created:', blob.size, 'bytes');
+                        
+                        // Create download link
                         const url = window.URL.createObjectURL(blob);
                         const a = document.createElement('a');
+                        a.style.display = 'none';
                         a.href = url;
-                        a.download = 'schedule.ics';
+                        a.download = 'uc_berkeley_schedule.ics';
+                        
+                        // Add to DOM, click, and remove
                         document.body.appendChild(a);
                         a.click();
-                        window.URL.revokeObjectURL(url);
-                        document.body.removeChild(a);
-                        alert('ICS file downloaded! Import it into your calendar app. ✅');
+                        
+                        // Cleanup
+                        setTimeout(() => {
+                            document.body.removeChild(a);
+                            window.URL.revokeObjectURL(url);
+                        }, 100);
+                        
+                        alert('✅ ICS file downloaded! Check your downloads folder and import it into your calendar app.');
                     } else {
-                        const error = await response.json();
-                        alert(`Error: ${error.error}`);
+                        console.error('Response not ok:', response.status);
+                        try {
+                            const errorText = await response.text();
+                            console.error('Error response:', errorText);
+                            alert(`Error downloading file: ${response.status} - ${errorText}`);
+                        } catch (e) {
+                            alert(`Error downloading file: ${response.status}`);
+                        }
                     }
                 } catch (error) {
+                    console.error('Download error:', error);
                     alert(`Error: ${error.message}`);
                 }
             }
@@ -468,20 +491,37 @@ async def generate_ics(request: Request):
         semester_start = data.get("semester_start", "")
         semester_end = data.get("semester_end", "")
         
+        print(f"Generating ICS for {len(classes)} classes")
+        print(f"Semester: {semester_start} to {semester_end}")
+        
         if not classes:
-            return {"error": "No classes to export"}
+            return Response(
+                content='{"error": "No classes to export"}',
+                status_code=400,
+                media_type="application/json"
+            )
         
         # Generate ICS content
         ics_content = generate_ics_file(classes, semester_start, semester_end)
         
+        print(f"Generated ICS content: {len(ics_content)} characters")
+        
         return Response(
             content=ics_content,
             media_type="text/calendar",
-            headers={"Content-Disposition": "attachment; filename=schedule.ics"}
+            headers={
+                "Content-Disposition": "attachment; filename=uc_berkeley_schedule.ics",
+                "Content-Type": "text/calendar; charset=utf-8"
+            }
         )
         
     except Exception as e:
-        return {"error": str(e)}
+        print(f"Error generating ICS: {str(e)}")
+        return Response(
+            content=f'{{"error": "{str(e)}"}}',
+            status_code=500,
+            media_type="application/json"
+        )
 
 if __name__ == "__main__":
     import uvicorn
