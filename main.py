@@ -215,24 +215,60 @@ async def main_page():
                         const blob = await response.blob();
                         console.log('Blob created:', blob.size, 'bytes');
                         
-                        // Create download link
-                        const url = window.URL.createObjectURL(blob);
-                        const a = document.createElement('a');
-                        a.style.display = 'none';
-                        a.href = url;
-                        a.download = 'uc_berkeley_schedule.ics';
+                        // Check if we're on mobile
+                        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
                         
-                        // Add to DOM, click, and remove
-                        document.body.appendChild(a);
-                        a.click();
-                        
-                        // Cleanup
-                        setTimeout(() => {
-                            document.body.removeChild(a);
-                            window.URL.revokeObjectURL(url);
-                        }, 100);
-                        
-                        alert('✅ ICS file downloaded! Check your downloads folder and import it into your calendar app.');
+                        if (isMobile) {
+                            // Mobile fallback: show content in new window/tab
+                            const icsText = await blob.text();
+                            const newWindow = window.open('', '_blank');
+                            if (newWindow) {
+                                newWindow.document.write(`
+                                    <html>
+                                    <head>
+                                        <title>UC Berkeley Schedule - Calendar File</title>
+                                        <style>
+                                            body { font-family: monospace; margin: 20px; }
+                                            .instructions { background: #e8f5e8; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+                                            .content { background: #f5f5f5; padding: 10px; border-radius: 5px; white-space: pre-wrap; font-size: 12px; }
+                                        </style>
+                                    </head>
+                                    <body>
+                                        <div class="instructions">
+                                            <h3>📱 Mobile Download Instructions:</h3>
+                                            <p>1. Select all the text below (tap and hold, then "Select All")</p>
+                                            <p>2. Copy it</p>
+                                            <p>3. Create a new file called "schedule.ics" on your device</p>
+                                            <p>4. Paste the content and save</p>
+                                            <p>5. Open the file with your calendar app to import</p>
+                                        </div>
+                                        <div class="content">${icsText}</div>
+                                    </body>
+                                    </html>
+                                `);
+                                newWindow.document.close();
+                            }
+                            alert('📱 Calendar file opened in new tab! Follow the instructions to save and import it.');
+                        } else {
+                            // Desktop: try normal download
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.style.display = 'none';
+                            a.href = url;
+                            a.download = 'uc_berkeley_schedule.ics';
+                            
+                            // Add to DOM, click, and remove
+                            document.body.appendChild(a);
+                            a.click();
+                            
+                            // Cleanup
+                            setTimeout(() => {
+                                document.body.removeChild(a);
+                                window.URL.revokeObjectURL(url);
+                            }, 100);
+                            
+                            alert('✅ ICS file downloaded! Check your downloads folder and import it into your calendar app.');
+                        }
                     } else {
                         console.error('Response not ok:', response.status);
                         try {
