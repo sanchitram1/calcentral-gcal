@@ -1,0 +1,172 @@
+Skip to Main Content
+Schedule Planner
+Help Help
+Potential Schedule for 2025 Fall
+Status	Class #	Subject	Course	Section	Seats Open	Instruction Mode	Instructor	Day(s) & Location(s)	Units
+Enrolled	29901	Industrial Eng & Ops Rsch	215	001	19	In-Person Instruction	
+Phillip Kerger
+MW 12:00pm - 12:59pm - Latimer 120
+3
+Has Reserved SeatsHas Reserved Seats
+Reserved Seats:
+130 of 150 At least some seats in this class are reserved for students who meet specific criteria. See the Berkeley Academic Guide Class Schedule for details.
+Enrolled	33001	Industrial Eng & Ops Rsch	215	102	16	In-Person Instruction	
+F 10:00am - 10:59am - Barker 101
+0
+Enrolled	29442	Industrial Eng & Ops Rsch	221	101	9	In-Person Instruction	
+F 12:00pm - 12:59pm - Physics Building 2
+0
+Enrolled	29441	Industrial Eng & Ops Rsch	221	001	9	In-Person Instruction	
+Lizeng Zhang
+MW 5:00pm - 6:29pm - Valley Life Sciences 2060
+3
+Has Reserved SeatsHas Reserved Seats
+Reserved Seats:
+8 of 10 At least some seats in this class are reserved for students who meet specific criteria. See the Berkeley Academic Guide Class Schedule for details.
+40 of 40 At least some seats in this class are reserved for students who meet specific criteria. See the Berkeley Academic Guide Class Schedule for details.
+14 of 15 At least some seats in this class are reserved for students who meet specific criteria. See the Berkeley Academic Guide Class Schedule for details.
+22 of 30 At least some seats in this class are reserved for students who meet specific criteria. See the Berkeley Academic Guide Class Schedule for details.
+Enrolled	29899	Industrial Eng & Ops Rsch	240	002	20	In-Person Instruction	
+Phillip Kerger
+MWF 2:00pm - 2:59pm - Lewis 100
+3
+Has Reserved SeatsHas Reserved Seats
+Reserved Seats:
+117 of 129 At least some seats in this class are reserved for students who meet specific criteria. See the Berkeley Academic Guide Class Schedule for details.
+24 of 32 At least some seats in this class are reserved for students who meet specific criteria. See the Berkeley Academic Guide Class Schedule for details.
+Enrolled	34223	Industrial Eng & Ops Rsch	240	203	11	In-Person Instruction	
+F 4:00pm - 4:59pm
+0
+Enrolled	30049	Industrial Eng & Ops Rsch	241	201	4	In-Person Instruction	
+F 1:00pm - 1:59pm - GSPP 150
+0
+Enrolled	29900	Industrial Eng & Ops Rsch	241	002	31	In-Person Instruction	
+Thibaut Mastrolia
+TTh 11:00am - 12:29pm - Haas Faculty Wing F295
+3
+Has Reserved SeatsHas Reserved Seats
+Reserved Seats:
+97 of 125 At least some seats in this class are reserved for students who meet specific criteria. See the Berkeley Academic Guide Class Schedule for details.
+32 of 35 At least some seats in this class are reserved for students who meet specific criteria. See the Berkeley Academic Guide Class Schedule for details.
+Enrolled	30351	Industrial Eng & Ops Rsch	242A	1	10	In-Person Instruction	
+Ying Cui
+TTh 3:30pm - 4:59pm - Stanley 105
+4
+Has Reserved SeatsHas Reserved Seats
+Reserved Seats:
+26 of 28 At least some seats in this class are reserved for students who meet specific criteria. See the Berkeley Academic Guide Class Schedule for details.
+131 of 139 At least some seats in this class are reserved for students who meet specific criteria. See the Berkeley Academic Guide Class Schedule for details.
+Enrolled	30507	Industrial Eng & Ops Rsch	242A	102	0	In-Person Instruction	
+F 11:00am - 11:59am - Tan 180
+0
+Enrolled	16623	Industrial Eng & Ops Rsch	298	7	7	In-Person Instruction	
+Diana Chavez
+Alper Atamturk
+W 4:00pm - 4:59pm
+1 - 4
+Has Reserved SeatsHas Reserved Seats
+Reserved Seats:
+33 of 40 At least some seats in this class are reserved for students who meet specific criteria. See the Berkeley Academic Guide Class Schedule for details.
+17 - 20
+The following is a calendar display for course schedules. The first row, containing the days of the week, provides a summary of the courses listed for each day. The first column is a time column to show the start and end times for each course section.
+MondayThis day has Industrial Eng & Ops Rsch - 215 DATABASE SYSTEMS from 12:00pm to 12:59pm Industrial Eng & Ops Rsch - 240 OPTIMIZATION ANALYT from 2:00pm to 2:59pm Industrial Eng & Ops Rsch - 221 INTRO FINANCE ENG from 5:00pm to 6:29pm
+TuesdayThis day has Industrial Eng & Ops Rsch - 241 RISK MODELING SIMUL from 11:00am to 12:29pm Industrial Eng & Ops Rsch - 242A MACH LRNING & DATA from 3:30pm to 4:59pm
+WednesdayThis day has Industrial Eng & Ops Rsch - 215 DATABASE SYSTEMS from 12:00pm to 12:59pm Industrial Eng & Ops Rsch - 240 OPTIMIZATION ANALYT from 2:00pm to 2:59pm Industrial Eng & Ops Rsch - 298 GRP STUD, SEM, RES from 4:00pm to 4:59pm Industrial Eng & Ops Rsch - 221 INTRO FINANCE ENG from 5:00pm to 6:29pm
+ThursdayThis day has Industrial Eng & Ops Rsch - 241 RISK MODELING SIMUL from 11:00am to 12:29pm Industrial Eng & Ops Rsch - 242A MACH LRNING & DATA from 3:30pm to 4:59pm
+FridayThis day has Industrial Eng & Ops Rsch - 215 DATABASE SYSTEMS from 10:00am to 10:59am Industrial Eng & Ops Rsch - 242A MACH LRNING & DATA from 11:00am to 11:59am Industrial Eng & Ops Rsch - 221 INTRO FINANCE ENG from 12:00pm to 12:59pm Industrial Eng & Ops Rsch - 241 RISK MODELING SIMUL from 1:00pm to 1:59pm Industrial Eng & Ops Rsch - 240 OPTIMIZATION ANALYT from 2:00pm to 2:59pm Industrial Eng & Ops Rsch - 240 OPTIMIZATION ANALYT from 4:00pm to 4:59pm
+8am
+8:15
+8:30
+8:45
+9am
+9:15
+9:30
+9:45
+10am
+10:15
+10:30
+10:45
+11am
+11:15
+11:30
+11:45
+12pm
+12:15
+12:30
+12:45
+1pm
+1:15
+1:30
+1:45
+2pm
+2:15
+2:30
+2:45
+3pm
+3:15
+3:30
+3:45
+4pm
+4:15
+4:30
+4:45
+5pm
+5:15
+5:30
+5:45
+6pm
+6:15
+6:30
+6:45
+7pm
+7:15
+7:30
+7:45
+8pm
+8:15
+8:30
+8:45
+Industrial Eng & Ops Rsch-215
+Latimer 120
+Phillip Kerger
+Industrial Eng & Ops Rsch-240
+Lewis 100
+Phillip Kerger
+Industrial Eng & Ops Rsch-221
+Valley Life Sciences 2060
+Lizeng Zhang
+Industrial Eng & Ops Rsch-241
+Haas Faculty Wing F295
+Thibaut Mastrolia
+Industrial Eng & Ops Rsch-242A
+Stanley 105
+Ying Cui
+Industrial Eng & Ops Rsch-215
+Latimer 120
+Phillip Kerger
+Industrial Eng & Ops Rsch-240
+Lewis 100
+Phillip Kerger
+Industrial Eng & Ops Rsch-298
+Diana Chavez, Alper Atamturk
+Industrial Eng & Ops Rsch-221
+Valley Life Sciences 2060
+Lizeng Zhang
+Industrial Eng & Ops Rsch-241
+Haas Faculty Wing F295
+Thibaut Mastrolia
+Industrial Eng & Ops Rsch-242A
+Stanley 105
+Ying Cui
+Industrial Eng & Ops Rsch-215
+Barker 101
+Industrial Eng & Ops Rsch-242A
+Tan 180
+Industrial Eng & Ops Rsch-221
+Physics Building 2
+Industrial Eng & Ops Rsch-241
+GSPP 150
+Industrial Eng & Ops Rsch-240
+Lewis 100
+Phillip Kerger
+Industrial Eng & Ops Rsch-240
