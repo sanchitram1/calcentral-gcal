@@ -15,6 +15,7 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 import io
+from text_parser import parse_schedule_from_text
 
 app = FastAPI(title="UC Berkeley Schedule to Google Calendar")
 
@@ -32,9 +33,16 @@ async def main_page():
             body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
             .upload-area { border: 2px dashed #ccc; padding: 40px; text-align: center; margin: 20px 0; }
             .upload-area.dragover { border-color: #007bff; background-color: #f8f9fa; }
+            .text-area { border: 2px solid #ccc; padding: 20px; margin: 20px 0; border-radius: 4px; }
             .form-group { margin: 15px 0; }
+            .tab-buttons { display: flex; margin-bottom: 20px; }
+            .tab-button { padding: 10px 20px; background: #f8f9fa; border: 1px solid #ccc; cursor: pointer; }
+            .tab-button.active { background: #007bff; color: white; }
+            .tab-content { display: none; }
+            .tab-content.active { display: block; }
             label { display: block; margin-bottom: 5px; font-weight: bold; }
-            input, select { padding: 8px; margin: 5px 0; width: 100%; max-width: 300px; }
+            input, select, textarea { padding: 8px; margin: 5px 0; width: 100%; max-width: 300px; }
+            textarea { max-width: 100%; height: 200px; }
             button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
             button:hover { background: #0056b3; }
             .schedule-preview { background: #f8f9fa; padding: 15px; margin: 15px 0; border-radius: 4px; }
@@ -45,14 +53,30 @@ async def main_page():
     </head>
     <body>
         <h1>🗓️ UC Berkeley Schedule to Google Calendar</h1>
-        <p>Upload your schedule screenshot and automatically create Google Calendar events!</p>
+        <p>Upload your schedule screenshot or paste schedule text to automatically create Google Calendar events!</p>
+        
+        <div class="tab-buttons">
+            <div class="tab-button active" onclick="switchTab('image')">📸 Image Upload</div>
+            <div class="tab-button" onclick="switchTab('text')">📝 Text Paste</div>
+        </div>
         
         <form id="uploadForm" enctype="multipart/form-data">
-            <div class="form-group">
-                <label>Upload Schedule Screenshot:</label>
-                <div class="upload-area" id="uploadArea">
-                    <input type="file" id="fileInput" name="file" accept="image/*" style="display: none;">
-                    <div id="uploadText">Click here or drag and drop your schedule image</div>
+            <div id="imageTab" class="tab-content active">
+                <div class="form-group">
+                    <label>Upload Schedule Screenshot:</label>
+                    <div class="upload-area" id="uploadArea">
+                        <input type="file" id="fileInput" name="file" accept="image/*" style="display: none;">
+                        <div id="uploadText">Click here or drag and drop your schedule image</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="textTab" class="tab-content">
+                <div class="form-group">
+                    <label>Paste Schedule Text (from UC Berkeley Schedule Planner page):</label>
+                    <div class="text-area">
+                        <textarea id="scheduleText" name="schedule_text" placeholder="Paste the text content from your schedule planner page here..."></textarea>
+                    </div>
                 </div>
             </div>
             
@@ -102,17 +126,43 @@ async def main_page():
                     file ? `Selected: ${file.name}` : 'Click here or drag and drop your schedule image';
             }
             
+            function switchTab(tabName) {
+                // Hide all tabs
+                document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+                document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                
+                // Show selected tab
+                document.getElementById(tabName + 'Tab').classList.add('active');
+                event.target.classList.add('active');
+            }
+            
             uploadForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
-                const formData = new FormData(uploadForm);
                 
                 document.getElementById('results').innerHTML = '<p>Processing schedule... 📋</p>';
                 
                 try {
-                    const response = await fetch('/extract-schedule', {
-                        method: 'POST',
-                        body: formData
-                    });
+                    const activeTab = document.querySelector('.tab-content.active').id;
+                    let response;
+                    
+                    if (activeTab === 'imageTab') {
+                        const formData = new FormData(uploadForm);
+                        response = await fetch('/extract-schedule', {
+                            method: 'POST',
+                            body: formData
+                        });
+                    } else {
+                        const textData = {
+                            schedule_text: document.getElementById('scheduleText').value,
+                            semester_start: document.getElementById('semester_start').value,
+                            semester_end: document.getElementById('semester_end').value
+                        };
+                        response = await fetch('/parse-text-schedule', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(textData)
+                        });
+                    }
                     
                     const result = await response.json();
                     displayResults(result);
@@ -275,6 +325,44 @@ async def extract_schedule(
             "semester_start": semester_start,
             "semester_end": semester_end,
             "extracted_text": text[:500]  # First 500 chars for debugging
+        }
+        
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.post("/parse-text-schedule")
+async def parse_text_schedule(request: Request):
+    try:
+        data = await request.json()
+        schedule_text = data.get("schedule_text", "")
+        semester_start = data.get("semester_start", "")
+        semester_end = data.get("semester_end", "")
+        
+        if not schedule_text.strip():
+            return {"error": "No schedule text provided"}
+        
+        # Parse the text to extract classes
+        parsed_classes = parse_schedule_from_text(schedule_text)
+        
+        # Convert to the format expected by the frontend
+        classes = []
+        for cls in parsed_classes:
+            classes.append({
+                "name": cls["name"],
+                "code": cls["course_number"],
+                "days": cls["days"],
+                "start_time": cls["start_time"],
+                "end_time": cls["end_time"],
+                "location": cls["location"],
+                "instructor": cls["instructor"]
+            })
+        
+        return {
+            "success": True,
+            "classes": classes,
+            "semester_start": semester_start,
+            "semester_end": semester_end,
+            "method": "text_parsing"
         }
         
     except Exception as e:
