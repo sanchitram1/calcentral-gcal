@@ -10,11 +10,8 @@ import re
 from datetime import datetime, timedelta
 import json
 from typing import List, Dict
-import os
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import Flow
-from googleapiclient.discovery import build
 import io
+from datetime import datetime, timedelta
 from text_parser import parse_schedule_from_text
 
 app = FastAPI(title="UC Berkeley Schedule to Google Calendar")
@@ -192,8 +189,8 @@ async def main_page():
                 
                 html += `
                     </div>
-                    <button onclick="exportToGoogleCalendar()" style="margin-top: 15px;">
-                        📅 Export to Google Calendar
+                    <button onclick="downloadICSFile()" style="margin-top: 15px;">
+                        📄 Download ICS File
                     </button>
                 `;
                 
@@ -201,19 +198,28 @@ async def main_page():
                 window.extractedData = result;
             }
             
-            async function exportToGoogleCalendar() {
+            async function downloadICSFile() {
                 try {
-                    const response = await fetch('/export-to-calendar', {
+                    const response = await fetch('/generate-ics', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(window.extractedData)
                     });
                     
-                    const result = await response.json();
-                    if (result.auth_url) {
-                        window.open(result.auth_url, '_blank');
+                    if (response.ok) {
+                        const blob = await response.blob();
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'schedule.ics';
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
+                        alert('ICS file downloaded! Import it into your calendar app. ✅');
                     } else {
-                        alert('Events created successfully! ✅');
+                        const error = await response.json();
+                        alert(`Error: ${error.error}`);
                     }
                 } catch (error) {
                     alert(`Error: ${error.message}`);
@@ -303,6 +309,90 @@ class ScheduleParser:
         
         return sample_classes
 
+def generate_ics_file(classes, semester_start_str, semester_end_str):
+    """Generate ICS file content from parsed classes"""
+    from datetime import datetime, timedelta
+    import uuid
+    
+    # Parse semester dates
+    semester_start = datetime.strptime(semester_start_str, "%Y-%m-%d").date()
+    semester_end = datetime.strptime(semester_end_str, "%Y-%m-%d").date()
+    
+    # ICS header
+    ics_lines = [
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
+        "PRODID:-//UC Berkeley Schedule//Schedule Planner//EN",
+        "CALSCALE:GREGORIAN",
+        "METHOD:PUBLISH"
+    ]
+    
+    # Day name to weekday number mapping
+    day_to_weekday = {
+        'Monday': 0, 'Tuesday': 1, 'Wednesday': 2, 
+        'Thursday': 3, 'Friday': 4, 'Saturday': 5, 'Sunday': 6
+    }
+    
+    for cls in classes:
+        for day in cls.get('days', []):
+            if day not in day_to_weekday:
+                continue
+                
+            weekday = day_to_weekday[day]
+            
+            # Find the first occurrence of this weekday in the semester
+            current_date = semester_start
+            while current_date.weekday() != weekday:
+                current_date += timedelta(days=1)
+            
+            # Parse start and end times
+            start_time_str = cls.get('start_time', '').replace(' ', '')
+            end_time_str = cls.get('end_time', '').replace(' ', '')
+            
+            try:
+                start_time = datetime.strptime(start_time_str, '%I:%M%p').time()
+                end_time = datetime.strptime(end_time_str, '%I:%M%p').time()
+            except:
+                # Try without minutes if parsing fails
+                try:
+                    start_time = datetime.strptime(start_time_str, '%I%p').time()
+                    end_time = datetime.strptime(end_time_str, '%I%p').time()
+                except:
+                    continue  # Skip this class if time parsing fails
+            
+            # Generate recurring events for each week of the semester
+            event_date = current_date
+            while event_date <= semester_end:
+                start_datetime = datetime.combine(event_date, start_time)
+                end_datetime = datetime.combine(event_date, end_time)
+                
+                # Format for ICS (UTC format)
+                start_utc = start_datetime.strftime('%Y%m%dT%H%M%S')
+                end_utc = end_datetime.strftime('%Y%m%dT%H%M%S')
+                
+                # Generate unique ID
+                event_id = str(uuid.uuid4())
+                
+                # Create event
+                ics_lines.extend([
+                    "BEGIN:VEVENT",
+                    f"UID:{event_id}",
+                    f"DTSTART:{start_utc}",
+                    f"DTEND:{end_utc}",
+                    f"SUMMARY:{cls.get('name', 'Class')} - {cls.get('code', '')}",
+                    f"LOCATION:{cls.get('location', '')}",
+                    f"DESCRIPTION:Instructor: {cls.get('instructor', 'TBA')}\\nCourse: {cls.get('code', '')}",
+                    "END:VEVENT"
+                ])
+                
+                # Move to next week
+                event_date += timedelta(days=7)
+    
+    # ICS footer
+    ics_lines.append("END:VCALENDAR")
+    
+    return "\r\n".join(ics_lines)
+
 @app.post("/extract-schedule")
 async def extract_schedule(
     file: UploadFile = File(...),
@@ -368,17 +458,27 @@ async def parse_text_schedule(request: Request):
     except Exception as e:
         return {"error": str(e)}
 
-@app.post("/export-to-calendar")
-async def export_to_calendar(request: Request):
+@app.post("/generate-ics")
+async def generate_ics(request: Request):
+    from fastapi.responses import Response
+    
     try:
         data = await request.json()
+        classes = data.get("classes", [])
+        semester_start = data.get("semester_start", "")
+        semester_end = data.get("semester_end", "")
         
-        # For now, return success - Google Calendar integration would go here
-        return {
-            "success": True,
-            "message": "Calendar events would be created here",
-            "events_created": len(data.get("classes", []))
-        }
+        if not classes:
+            return {"error": "No classes to export"}
+        
+        # Generate ICS content
+        ics_content = generate_ics_file(classes, semester_start, semester_end)
+        
+        return Response(
+            content=ics_content,
+            media_type="text/calendar",
+            headers={"Content-Disposition": "attachment; filename=schedule.ics"}
+        )
         
     except Exception as e:
         return {"error": str(e)}
