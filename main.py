@@ -209,17 +209,48 @@ async def main_page():
                     });
                     
                     console.log('Response status:', response.status);
-                    console.log('Response headers:', response.headers);
                     
                     if (response.ok) {
                         const blob = await response.blob();
                         console.log('Blob created:', blob.size, 'bytes');
                         
-                        // Check if we're on mobile
-                        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+                        // Create download URL
+                        const url = window.URL.createObjectURL(blob);
                         
-                        if (isMobile) {
-                            // Mobile fallback: show content in new window/tab
+                        // Try multiple download approaches for better compatibility
+                        let downloadSuccess = false;
+                        
+                        // Method 1: Standard download link
+                        try {
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = 'uc_berkeley_schedule.ics';
+                            a.style.display = 'none';
+                            
+                            // Trigger download
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            
+                            downloadSuccess = true;
+                        } catch (e) {
+                            console.log('Method 1 failed:', e);
+                        }
+                        
+                        // Method 2: Force download with window.open if method 1 fails
+                        if (!downloadSuccess) {
+                            try {
+                                const newWindow = window.open(url, '_blank');
+                                if (newWindow) {
+                                    downloadSuccess = true;
+                                }
+                            } catch (e) {
+                                console.log('Method 2 failed:', e);
+                            }
+                        }
+                        
+                        // Method 3: Show ICS content for manual save
+                        if (!downloadSuccess) {
                             const icsText = await blob.text();
                             const newWindow = window.open('', '_blank');
                             if (newWindow) {
@@ -227,57 +258,64 @@ async def main_page():
                                     <html>
                                     <head>
                                         <title>UC Berkeley Schedule - Calendar File</title>
+                                        <meta name="viewport" content="width=device-width, initial-scale=1">
                                         <style>
-                                            body { font-family: monospace; margin: 20px; }
+                                            body { font-family: Arial, sans-serif; margin: 20px; }
                                             .instructions { background: #e8f5e8; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
-                                            .content { background: #f5f5f5; padding: 10px; border-radius: 5px; white-space: pre-wrap; font-size: 12px; }
+                                            .download-link { background: #007bff; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; display: inline-block; margin: 10px 0; }
+                                            .content { background: #f5f5f5; padding: 10px; border-radius: 5px; white-space: pre-wrap; font-size: 12px; border: 1px solid #ccc; max-height: 400px; overflow-y: auto; }
+                                            .copy-btn { background: #28a745; color: white; padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; margin: 5px 0; }
                                         </style>
                                     </head>
                                     <body>
                                         <div class="instructions">
-                                            <h3>📱 Mobile Download Instructions:</h3>
-                                            <p>1. Select all the text below (tap and hold, then "Select All")</p>
-                                            <p>2. Copy it</p>
-                                            <p>3. Create a new file called "schedule.ics" on your device</p>
-                                            <p>4. Paste the content and save</p>
-                                            <p>5. Open the file with your calendar app to import</p>
+                                            <h3>📅 Download Your Calendar File</h3>
+                                            <p><strong>Option 1:</strong> Right-click the download link below and choose "Save Link As..." to save as schedule.ics</p>
+                                            <a href="data:text/calendar;charset=utf-8,${encodeURIComponent(icsText)}" download="uc_berkeley_schedule.ics" class="download-link">💾 Download schedule.ics</a>
+                                            <p><strong>Option 2:</strong> Copy the text below and save it as a .ics file:</p>
+                                            <button class="copy-btn" onclick="copyToClipboard()">📋 Copy Calendar Data</button>
                                         </div>
-                                        <div class="content">${icsText}</div>
+                                        <div class="content" id="icsContent">${icsText}</div>
+                                        <script>
+                                            function copyToClipboard() {
+                                                const content = document.getElementById('icsContent').textContent;
+                                                navigator.clipboard.writeText(content).then(() => {
+                                                    alert('✅ Calendar data copied to clipboard! Create a new file named "schedule.ics" and paste this content.');
+                                                }).catch(() => {
+                                                    // Fallback for older browsers
+                                                    const textArea = document.createElement('textarea');
+                                                    textArea.value = content;
+                                                    document.body.appendChild(textArea);
+                                                    textArea.select();
+                                                    document.execCommand('copy');
+                                                    document.body.removeChild(textArea);
+                                                    alert('✅ Calendar data copied to clipboard! Create a new file named "schedule.ics" and paste this content.');
+                                                });
+                                            }
+                                        </script>
                                     </body>
                                     </html>
                                 `);
                                 newWindow.document.close();
                             }
-                            alert('📱 Calendar file opened in new tab! Follow the instructions to save and import it.');
-                        } else {
-                            // Desktop: try normal download
-                            const url = window.URL.createObjectURL(blob);
-                            const a = document.createElement('a');
-                            a.style.display = 'none';
-                            a.href = url;
-                            a.download = 'uc_berkeley_schedule.ics';
-                            
-                            // Add to DOM, click, and remove
-                            document.body.appendChild(a);
-                            a.click();
-                            
-                            // Cleanup
-                            setTimeout(() => {
-                                document.body.removeChild(a);
-                                window.URL.revokeObjectURL(url);
-                            }, 100);
-                            
-                            alert('✅ ICS file downloaded! Check your downloads folder and import it into your calendar app.');
                         }
+                        
+                        // Cleanup
+                        setTimeout(() => {
+                            window.URL.revokeObjectURL(url);
+                        }, 1000);
+                        
+                        if (downloadSuccess) {
+                            alert('✅ Calendar file download started! Check your downloads folder and import the .ics file into your calendar app.');
+                        } else {
+                            alert('📄 Calendar file opened in new tab! Use the download link or copy the content to create your .ics file.');
+                        }
+                        
                     } else {
                         console.error('Response not ok:', response.status);
-                        try {
-                            const errorText = await response.text();
-                            console.error('Error response:', errorText);
-                            alert(`Error downloading file: ${response.status} - ${errorText}`);
-                        } catch (e) {
-                            alert(`Error downloading file: ${response.status}`);
-                        }
+                        const errorText = await response.text();
+                        console.error('Error response:', errorText);
+                        alert(`Error downloading file: ${response.status} - ${errorText}`);
                     }
                 } catch (error) {
                     console.error('Download error:', error);
