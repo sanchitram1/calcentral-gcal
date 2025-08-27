@@ -5,10 +5,9 @@ from fastapi.responses import HTMLResponse
 
 from text_parser import parse_schedule_from_text
 
-app = FastAPI(title="UC Berkeley Schedule to Google Calendar")
+app = FastAPI(title="UC Berkeley Schedule Parser")
 
-# Configure Tesseract path (adjust if needed)
-# pytesseract.pytesseract.tesseract_cmd = r'/usr/bin/tesseract'
+
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -17,7 +16,7 @@ async def main_page():
     <!DOCTYPE html>
     <html>
     <head>
-        <title>Schedule to Google Calendar</title>
+        <title>UC Berkeley Schedule Parser</title>
         <style>
             body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
             .text-area { border: 2px solid #ccc; padding: 20px; margin: 20px 0; border-radius: 4px; }
@@ -34,8 +33,8 @@ async def main_page():
         </style>
     </head>
     <body>
-        <h1>🗓️ UC Berkeley Schedule to Google Calendar</h1>
-        <p>Paste your schedule text from UC Berkeley Schedule Planner to automatically create Google Calendar events!</p>
+        <h1>🗓️ UC Berkeley Schedule Parser</h1>
+        <p>Paste your schedule text from UC Berkeley Schedule Planner to parse your class schedule!</p>
         
         <form id="uploadForm">
             <div class="form-group">
