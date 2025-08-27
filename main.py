@@ -102,7 +102,7 @@ async def main_page():
                     const instructorList = Array.isArray(cls.instructor) ? cls.instructor.join(', ') : cls.instructor || 'TBA';
                     html += `
                         <div class="class-item">
-                            <strong>${cls.name}</strong><br>
+                            <strong>${cls.name} ${cls.number}</strong><br>
                             📅 ${cls.schedule.days} | 🕐 ${cls.schedule.start_time} - ${cls.schedule.end_time}<br>
                             📍 ${cls.location} | 👨‍🏫 ${instructorList}
                         </div>
