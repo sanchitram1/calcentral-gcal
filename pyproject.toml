@@ -5,7 +5,7 @@ description = "Download your schedule as an ICS file from Berkeley's Schedule Pl
 authors = ["Sanchit Ram Arvind <sanchitram@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.13"
+python = "^3.11"
 fastapi = "^0.104.0"
 uvicorn = {extras = ["standard"], version = "^0.24.0"}
 python-multipart = "^0.0.6"
