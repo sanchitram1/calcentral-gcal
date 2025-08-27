@@ -81,7 +81,12 @@ def parse_class_schedule(text_blob: str) -> list[Course]:
             schedule_no_loc_match = schedule_no_loc_pattern.search(line)
             if schedule_no_loc_match:
                 days, time = schedule_no_loc_match.groups()
-                course.schedule = {"Days": days.strip(), "Time": time.strip()}
+                course.schedule.days = days.strip()
+                
+                # Parse the time
+                start_time, end_time = split_time(time)
+                course.schedule.start_time = start_time
+                course.schedule.end_time = end_time
                 continue
 
             # Check for instructor names
