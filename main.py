@@ -71,13 +71,16 @@ async def main_page():
                         semester_start: document.getElementById('semester_start').value,
                         semester_end: document.getElementById('semester_end').value
                     };
+                    console.log('***** TextData:', textData);
                     const response = await fetch('/parse-text-schedule', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(textData)
                     });
+                    console.log('***** Response:', await response.json());
                     
                     const result = await response.json();
+                    console.log('***** Result before displayResult:', result);
                     displayResults(result);
                 } catch (error) {
                     document.getElementById('results').innerHTML = 
@@ -86,7 +89,9 @@ async def main_page():
             });
             
             function displayResults(result) {
+                console.log('***** Result inside displayResult:', result.classes);
                 if (result.error) {
+                    console.error('***** Error:', result.error);
                     document.getElementById('results').innerHTML = 
                         `<p class="error">Error: ${result.error}</p>`;
                     return;
@@ -97,7 +102,7 @@ async def main_page():
                     html += `
                         <div class="class-item">
                             <strong>${cls.name}</strong><br>
-                            📅 ${cls.days.join(', ')} | 🕐 ${cls.start_time} - ${cls.end_time}<br>
+                            📅 ${cls.days} | 🕐 ${cls.start_time} - ${cls.end_time}<br>
                             📍 ${cls.location} | 👨‍🏫 ${cls.instructor}
                         </div>
                     `;
@@ -219,6 +224,7 @@ async def parse_text_schedule(request: Request):
 
         # Parse the text to extract classes
         parsed_courses = parse_class_schedule(schedule_text)
+        print(f"Parsed courses: {parsed_courses}")
 
         # Convert to the format expected by the frontend
         courses = []
@@ -234,6 +240,7 @@ async def parse_text_schedule(request: Request):
                     "instructor": cls.instructor,
                 }
             )
+        print(f"Courses: {courses}")
 
         return {
             "success": True,
