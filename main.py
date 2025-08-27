@@ -71,16 +71,13 @@ async def main_page():
                         semester_start: document.getElementById('semester_start').value,
                         semester_end: document.getElementById('semester_end').value
                     };
-                    console.log('***** TextData:', textData);
                     const response = await fetch('/parse-text-schedule', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(textData)
                     });
-                    console.log('***** Response:', response);
                     
                     const result = await response.json();
-                    console.log('***** Result before displayResult:', result);
                     displayResults(result);
                 } catch (error) {
                     document.getElementById('results').innerHTML = 
@@ -224,7 +221,6 @@ async def parse_text_schedule(request: Request):
 
         # Parse the text to extract classes
         parsed_courses = parse_class_schedule(schedule_text)
-        print(f"Parsed courses: {parsed_courses}")
 
         # Convert to the format expected by the frontend
         courses = []
@@ -240,8 +236,6 @@ async def parse_text_schedule(request: Request):
                     "instructor": cls.instructor,
                 }
             )
-        print("-" * 50)
-        print(f"Courses: {courses}")
 
         return {
             "success": True,
@@ -263,9 +257,6 @@ async def generate_ics(request: Request):
         semester_start = data.get("semester_start", "")
         semester_end = data.get("semester_end", "")
 
-        print(f"Generating ICS for {len(classes)} classes")
-        print(f"Semester: {semester_start} to {semester_end}")
-
         if not classes:
             return Response(
                 content='{"error": "No classes to export"}',
@@ -276,8 +267,6 @@ async def generate_ics(request: Request):
         # Generate ICS content
         ics_content = generate_ics_file(classes, semester_start, semester_end)
 
-        print(f"Generated ICS content: {len(ics_content)} characters")
-
         response = Response(
             content=ics_content,
             media_type="text/calendar",
@@ -286,8 +275,6 @@ async def generate_ics(request: Request):
                 "Content-Type": "text/calendar; charset=utf-8",
             },
         )
-
-        print("ICS Response created", response.headers, response.status_code)
 
         return response
 
