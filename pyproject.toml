@@ -1,7 +1,7 @@
 [project]
-name = "python-template"
+name = "calcentral-ics"
 version = "0.1.0"
-description = ""
+description = "Download your schedule as an ICS file from Berkeley's Schedule Planner Tool."
 authors = [{ name = "Sanchit Ram Arvind", email = "sanchitram@gmail.com" }]
 requires-python = ">=3.13"
 dependencies = [
