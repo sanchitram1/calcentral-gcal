@@ -36,3 +36,31 @@ def test_parse_class_schedule():
         ),
     ]
     assert result == expected
+
+
+def test_parse_class_schedule_tuesday_thursday():
+    schedule_test = """
+    Skip to Main Content
+    Schedule Planner
+    Help Help
+    Enrolled\t29900\tIndustrial Eng & Ops Rsch\t241\t002\t31\tIn-Person Instruction\t
+    Thibaut Mastrolia
+    TTh 11:00am - 12:29pm - Haas Faculty Wing F295
+    3
+    Has Reserved SeatsHas Reserved Seats
+    Reserved Seats:
+    97 of 125 At least some seats in this class are reserved for students who meet specific criteria. See the Berkeley Academic Guide Class Schedule for details.
+    32 of 35 At least some seats in this class are reserved for students who meet specific criteria. See the Berkeley Academic Guide Class Schedule for details.
+    """
+    result = parse_class_schedule(schedule_test)
+    expected = [
+        Course(
+            id="29900",
+            name="Industrial Eng & Ops Rsch",
+            number="241",
+            location="Haas Faculty Wing F295",
+            schedule=Schedule(start_time="11:00am", end_time="12:29pm", days="TTh"),
+            instructor=["Thibaut Mastrolia"],
+        ),
+    ]
+    assert result == expected
