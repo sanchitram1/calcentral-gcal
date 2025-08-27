@@ -1,13 +1,11 @@
 from datetime import datetime, timedelta
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, File, Form, Request, UploadFile
 from fastapi.responses import HTMLResponse
 
 from text_parser import parse_schedule_from_text
 
-app = FastAPI(title="UC Berkeley Schedule Parser")
-
-
+app = FastAPI(title="UC Berkeley Schedule to Google Calendar")
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -208,7 +206,24 @@ async def main_page():
     """
 
 
+class ScheduleParser:
+    def __init__(self):
+        self.days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+        self.time_pattern = r"(\d{1,2}):?(\d{2})?\s*(am|pm)"
 
+    def parse_schedule_text(self, text, semester_start, semester_end):
+        """Parse OCR text to extract class information"""
+        lines = [line.strip() for line in text.split("\n") if line.strip()]
+        classes = []
+
+        # Pattern to match class entries
+        class_patterns = [
+            r"(Industrial Eng & Ops|[A-Z][a-z]+ [A-Z][a-z]+)\s+([A-Z]+-\d+)",  # Class name and code
+            r"([A-Z][a-z]+ \d+)",  # Room numbers
+            r"([A-Z][a-z]+ [A-Z][a-z]+)",  # Instructor names
+        ]
+
+        return sample_classes
 
 
 def generate_ics_file(classes, semester_start_str, semester_end_str):
@@ -302,7 +317,32 @@ def generate_ics_file(classes, semester_start_str, semester_end_str):
     return "\r\n".join(ics_lines)
 
 
+@app.post("/extract-schedule")
+async def extract_schedule(
+    file: UploadFile = File(...),
+    semester_start: str = Form(...),
+    semester_end: str = Form(...),
+):
+    try:
+        # Read and process the uploaded image
+        contents = await file.read()
+        image = Image.open(io.BytesIO(contents))
 
+        # Initialize parser and extract schedule
+        parser = ScheduleParser()
+        text = parser.extract_text_from_image(image)
+        classes = parser.parse_schedule_text(text, semester_start, semester_end)
+
+        return {
+            "success": True,
+            "classes": classes,
+            "semester_start": semester_start,
+            "semester_end": semester_end,
+            "extracted_text": text[:500],  # First 500 chars for debugging
+        }
+
+    except Exception as e:
+        return {"error": str(e)}
 
 
 @app.post("/parse-text-schedule")
