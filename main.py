@@ -1,9 +1,9 @@
-import io
 from datetime import datetime, timedelta
 
-from fastapi import FastAPI, File, Form, Image, Request, UploadFile
+from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
-from text_parser import parse_schedule_from_text
+
+from parser import parse_class_schedule
 
 app = FastAPI(title="UC Berkeley Schedule to Google Calendar")
 
@@ -297,34 +297,6 @@ def generate_ics_file(classes, semester_start_str, semester_end_str):
     return "\r\n".join(ics_lines)
 
 
-@app.post("/extract-schedule")
-async def extract_schedule(
-    file: UploadFile = File(...),
-    semester_start: str = Form(...),
-    semester_end: str = Form(...),
-):
-    try:
-        # Read and process the uploaded image
-        contents = await file.read()
-        image = Image.open(io.BytesIO(contents))
-
-        # Initialize parser and extract schedule
-        parser = ScheduleParser()
-        text = parser.extract_text_from_image(image)
-        classes = parser.parse_schedule_text(text, semester_start, semester_end)
-
-        return {
-            "success": True,
-            "classes": classes,
-            "semester_start": semester_start,
-            "semester_end": semester_end,
-            "extracted_text": text[:500],  # First 500 chars for debugging
-        }
-
-    except Exception as e:
-        return {"error": str(e)}
-
-
 @app.post("/parse-text-schedule")
 async def parse_text_schedule(request: Request):
     try:
@@ -337,19 +309,19 @@ async def parse_text_schedule(request: Request):
             return {"error": "No schedule text provided"}
 
         # Parse the text to extract classes
-        parsed_classes = parse_schedule_from_text(schedule_text)
+        parsed_courses = parse_class_schedule(schedule_text)
 
         # Convert to the format expected by the frontend
-        classes = []
-        for cls in parsed_classes:
-            classes.append(
+        courses = []
+        for cls in parsed_courses:
+            courses.append(
                 {
-                    "name": cls["name"],
-                    "code": cls["course_number"],
-                    "days": cls["days"],
-                    "start_time": cls["start_time"],
+                    "name": cls.name,
+                    "code": cls.number,
+                    "days": cls.schedule["Days"],
+                    "start_time": cls.schedule["Time"],
                     "end_time": cls["end_time"],
-                    "location": cls["location"],
+                    "location": cls.location,
                     "instructor": cls["instructor"],
                 }
             )

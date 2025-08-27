@@ -3,13 +3,24 @@ from dataclasses import dataclass, field
 
 
 @dataclass
+class Schedule:
+    start_time: str = ""  # 11:00a
+    end_time: str = ""  # 12:30p
+    days: str = ""  # MTWThF OR MTWRF
+
+
+@dataclass
 class Course:
-    id: int = field(default_factory=int)
+    id: int = 0
     name: str = field(default_factory=str)
-    number: int = field(default_factory=int)
+    number: int = 0
     location: str = field(default_factory=str)
-    schedule: dict[str, str] = field(default_factory=dict)  # mapping from day to time
+    schedule: Schedule = field(default_factory=Schedule)
     instructor: str = field(default_factory=list)
+
+
+def split_time(time_str: str) -> tuple[str, str]:
+    return time_str.split(" - ")
 
 
 def parse_class_schedule(text_blob: str) -> list[Course]:
@@ -71,7 +82,14 @@ def parse_class_schedule(text_blob: str) -> list[Course]:
             schedule_match = schedule_pattern.search(line)
             if schedule_match:
                 days, time, location = schedule_match.groups()
-                course.schedule = {"Days": days.strip(), "Time": time.strip()}
+                course.schedule.days = days
+
+                # time
+                start_time, end_time = split_time(time)
+                course.schedule.start_time = start_time
+                course.schedule.end_time = end_time
+
+                # location
                 course.location = location.strip()
                 continue  # Move to the next line once schedule is found
 

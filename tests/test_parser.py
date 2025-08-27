@@ -1,4 +1,4 @@
-from parser import Course, parse_class_schedule
+from parser import Course, Schedule, parse_class_schedule
 
 
 def test_parse_class_schedule():
@@ -23,7 +23,7 @@ def test_parse_class_schedule():
             name="Industrial Eng & Ops Rsch",
             number="215",
             location="Latimer 120",
-            schedule={"Days": "MW", "Time": "12:00pm - 12:59pm"},
+            schedule=Schedule(start_time="12:00pm", end_time="12:59pm", days="MW"),
             instructor=["Phillip Kerger"],
         ),
         Course(
@@ -31,7 +31,7 @@ def test_parse_class_schedule():
             name="Industrial Eng & Ops Rsch",
             number="215",
             location="Barker 101",
-            schedule={"Days": "F", "Time": "10:00am - 10:59am"},
+            schedule=Schedule(start_time="10:00am", end_time="10:59am", days="F"),
             instructor=[],
         ),
     ]
