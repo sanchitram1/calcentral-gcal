@@ -1,6 +1,6 @@
 import re
 
-from structs import Course
+from structs import Course, Schedule
 
 
 def split_time(time_str: str) -> tuple[str, str]:
@@ -97,3 +97,54 @@ def parse_class_schedule(text_blob: str) -> list[Course]:
         extracted_classes.append(course)
 
     return extracted_classes
+
+
+def deserialize_courses(courses_data: list[dict]) -> list[Course]:
+    """
+    Deserialize a list of course dictionaries back to Course objects.
+    
+    Args:
+        courses_data: List of dictionaries containing course data
+        
+    Returns:
+        List of Course objects
+        
+    Raises:
+        ValueError: If required fields are missing or invalid
+    """
+    courses = []
+    
+    for i, course_data in enumerate(courses_data):
+        try:
+            # Validate required fields
+            if not isinstance(course_data, dict):
+                raise ValueError(f"Course at index {i} must be a dictionary")
+            
+            # Extract schedule data
+            schedule_data = course_data.get("schedule", {})
+            if not isinstance(schedule_data, dict):
+                raise ValueError(f"Course at index {i} has invalid schedule data")
+            
+            # Create Schedule object
+            schedule = Schedule(
+                start_time=schedule_data.get("start_time", ""),
+                end_time=schedule_data.get("end_time", ""),
+                days=schedule_data.get("days", ""),
+            )
+            
+            # Create Course object
+            course = Course(
+                id=course_data.get("id", 0),
+                name=course_data.get("name", ""),
+                number=course_data.get("number", ""),
+                location=course_data.get("location", ""),
+                schedule=schedule,
+                instructor=course_data.get("instructor", []),
+            )
+            
+            courses.append(course)
+            
+        except Exception as e:
+            raise ValueError(f"Failed to deserialize course at index {i}: {str(e)}")
+    
+    return courses
