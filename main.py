@@ -1,16 +1,13 @@
-from fastapi import FastAPI, UploadFile, File, Form, Request, Response
-from fastapi.responses import HTMLResponse, FileResponse
-from fastapi.staticfiles import StaticFiles
-import pytesseract
-from PIL import Image
-import cv2
-import numpy as np
-import re
-from datetime import datetime, timedelta
-import json
-from typing import List, Dict
 import io
 from datetime import datetime, timedelta
+
+import cv2
+import numpy as np
+import pytesseract
+from fastapi import FastAPI, File, Form, Request, UploadFile
+from fastapi.responses import HTMLResponse
+from PIL import Image
+
 from text_parser import parse_schedule_from_text
 
 app = FastAPI(title="UC Berkeley Schedule to Google Calendar")
@@ -291,10 +288,9 @@ async def main_page():
 
 
 class ScheduleParser:
-
     def __init__(self):
-        self.days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday']
-        self.time_pattern = r'(\d{1,2}):?(\d{2})?\s*(am|pm)'
+        self.days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+        self.time_pattern = r"(\d{1,2}):?(\d{2})?\s*(am|pm)"
 
     def preprocess_image(self, image):
         """Preprocess image for better OCR accuracy"""
@@ -312,8 +308,7 @@ class ScheduleParser:
         enhanced = cv2.convertScaleAbs(gray, alpha=alpha, beta=beta)
 
         # Apply threshold to get black and white
-        _, thresh = cv2.threshold(enhanced, 0, 255,
-                                  cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+        _, thresh = cv2.threshold(enhanced, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
 
         # Denoise
         denoised = cv2.medianBlur(thresh, 3)
@@ -328,49 +323,52 @@ class ScheduleParser:
 
     def parse_schedule_text(self, text, semester_start, semester_end):
         """Parse OCR text to extract class information"""
-        lines = [line.strip() for line in text.split('\n') if line.strip()]
+        lines = [line.strip() for line in text.split("\n") if line.strip()]
         classes = []
 
         # Pattern to match class entries
         class_patterns = [
-            r'(Industrial Eng & Ops|[A-Z][a-z]+ [A-Z][a-z]+)\s+([A-Z]+-\d+)',  # Class name and code
-            r'([A-Z][a-z]+ \d+)',  # Room numbers
-            r'([A-Z][a-z]+ [A-Z][a-z]+)',  # Instructor names
+            r"(Industrial Eng & Ops|[A-Z][a-z]+ [A-Z][a-z]+)\s+([A-Z]+-\d+)",  # Class name and code
+            r"([A-Z][a-z]+ \d+)",  # Room numbers
+            r"([A-Z][a-z]+ [A-Z][a-z]+)",  # Instructor names
         ]
 
         # For demo purposes, let's create some sample classes based on the screenshot
-        sample_classes = [{
-            "name": "Industrial Eng & Ops",
-            "code": "Rsch-215",
-            "days": ["Monday", "Wednesday"],
-            "start_time": "12:00 PM",
-            "end_time": "1:00 PM",
-            "location": "Latimer 120",
-            "instructor": "Phillip Kerger"
-        }, {
-            "name": "Industrial Eng & Ops",
-            "code": "Rsch-241",
-            "days": ["Monday", "Wednesday"],
-            "start_time": "11:00 AM",
-            "end_time": "12:00 PM",
-            "location": "Haas Faculty Wing F295",
-            "instructor": "Thibaut Mastrolia"
-        }, {
-            "name": "Industrial Eng & Ops",
-            "code": "Rsch-240",
-            "days": ["Monday", "Wednesday", "Friday"],
-            "start_time": "2:00 PM",
-            "end_time": "3:00 PM",
-            "location": "Lewis 100",
-            "instructor": "Phillip Kerger"
-        }]
+        sample_classes = [
+            {
+                "name": "Industrial Eng & Ops",
+                "code": "Rsch-215",
+                "days": ["Monday", "Wednesday"],
+                "start_time": "12:00 PM",
+                "end_time": "1:00 PM",
+                "location": "Latimer 120",
+                "instructor": "Phillip Kerger",
+            },
+            {
+                "name": "Industrial Eng & Ops",
+                "code": "Rsch-241",
+                "days": ["Monday", "Wednesday"],
+                "start_time": "11:00 AM",
+                "end_time": "12:00 PM",
+                "location": "Haas Faculty Wing F295",
+                "instructor": "Thibaut Mastrolia",
+            },
+            {
+                "name": "Industrial Eng & Ops",
+                "code": "Rsch-240",
+                "days": ["Monday", "Wednesday", "Friday"],
+                "start_time": "2:00 PM",
+                "end_time": "3:00 PM",
+                "location": "Lewis 100",
+                "instructor": "Phillip Kerger",
+            },
+        ]
 
         return sample_classes
 
 
 def generate_ics_file(classes, semester_start_str, semester_end_str):
     """Generate ICS file content from parsed classes"""
-    from datetime import datetime, timedelta
     import uuid
 
     # Parse semester dates
@@ -379,24 +377,26 @@ def generate_ics_file(classes, semester_start_str, semester_end_str):
 
     # ICS header
     ics_lines = [
-        "BEGIN:VCALENDAR", "VERSION:2.0",
+        "BEGIN:VCALENDAR",
+        "VERSION:2.0",
         "PRODID:-//UC Berkeley Schedule//Schedule Planner//EN",
-        "CALSCALE:GREGORIAN", "METHOD:PUBLISH"
+        "CALSCALE:GREGORIAN",
+        "METHOD:PUBLISH",
     ]
 
     # Day name to weekday number mapping
     day_to_weekday = {
-        'Monday': 0,
-        'Tuesday': 1,
-        'Wednesday': 2,
-        'Thursday': 3,
-        'Friday': 4,
-        'Saturday': 5,
-        'Sunday': 6
+        "Monday": 0,
+        "Tuesday": 1,
+        "Wednesday": 2,
+        "Thursday": 3,
+        "Friday": 4,
+        "Saturday": 5,
+        "Sunday": 6,
     }
 
     for cls in classes:
-        for day in cls.get('days', []):
+        for day in cls.get("days", []):
             if day not in day_to_weekday:
                 continue
 
@@ -408,19 +408,17 @@ def generate_ics_file(classes, semester_start_str, semester_end_str):
                 current_date += timedelta(days=1)
 
             # Parse start and end times
-            start_time_str = cls.get('start_time', '').replace(' ', '')
-            end_time_str = cls.get('end_time', '').replace(' ', '')
+            start_time_str = cls.get("start_time", "").replace(" ", "")
+            end_time_str = cls.get("end_time", "").replace(" ", "")
 
             try:
-                start_time = datetime.strptime(start_time_str,
-                                               '%I:%M%p').time()
-                end_time = datetime.strptime(end_time_str, '%I:%M%p').time()
+                start_time = datetime.strptime(start_time_str, "%I:%M%p").time()
+                end_time = datetime.strptime(end_time_str, "%I:%M%p").time()
             except:
                 # Try without minutes if parsing fails
                 try:
-                    start_time = datetime.strptime(start_time_str,
-                                                   '%I%p').time()
-                    end_time = datetime.strptime(end_time_str, '%I%p').time()
+                    start_time = datetime.strptime(start_time_str, "%I%p").time()
+                    end_time = datetime.strptime(end_time_str, "%I%p").time()
                 except:
                     continue  # Skip this class if time parsing fails
 
@@ -431,21 +429,25 @@ def generate_ics_file(classes, semester_start_str, semester_end_str):
                 end_datetime = datetime.combine(event_date, end_time)
 
                 # Format for ICS (UTC format)
-                start_utc = start_datetime.strftime('%Y%m%dT%H%M%S')
-                end_utc = end_datetime.strftime('%Y%m%dT%H%M%S')
+                start_utc = start_datetime.strftime("%Y%m%dT%H%M%S")
+                end_utc = end_datetime.strftime("%Y%m%dT%H%M%S")
 
                 # Generate unique ID
                 event_id = str(uuid.uuid4())
 
                 # Create event
-                ics_lines.extend([
-                    "BEGIN:VEVENT", f"UID:{event_id}", f"DTSTART:{start_utc}",
-                    f"DTEND:{end_utc}",
-                    f"SUMMARY:{cls.get('name', 'Class')} - {cls.get('code', '')}",
-                    f"LOCATION:{cls.get('location', '')}",
-                    f"DESCRIPTION:Instructor: {cls.get('instructor', 'TBA')}\\nCourse: {cls.get('code', '')}",
-                    "END:VEVENT"
-                ])
+                ics_lines.extend(
+                    [
+                        "BEGIN:VEVENT",
+                        f"UID:{event_id}",
+                        f"DTSTART:{start_utc}",
+                        f"DTEND:{end_utc}",
+                        f"SUMMARY:{cls.get('name', 'Class')} - {cls.get('code', '')}",
+                        f"LOCATION:{cls.get('location', '')}",
+                        f"DESCRIPTION:Instructor: {cls.get('instructor', 'TBA')}\\nCourse: {cls.get('code', '')}",
+                        "END:VEVENT",
+                    ]
+                )
 
                 # Move to next week
                 event_date += timedelta(days=7)
@@ -457,9 +459,11 @@ def generate_ics_file(classes, semester_start_str, semester_end_str):
 
 
 @app.post("/extract-schedule")
-async def extract_schedule(file: UploadFile = File(...),
-                           semester_start: str = Form(...),
-                           semester_end: str = Form(...)):
+async def extract_schedule(
+    file: UploadFile = File(...),
+    semester_start: str = Form(...),
+    semester_end: str = Form(...),
+):
     try:
         # Read and process the uploaded image
         contents = await file.read()
@@ -468,15 +472,14 @@ async def extract_schedule(file: UploadFile = File(...),
         # Initialize parser and extract schedule
         parser = ScheduleParser()
         text = parser.extract_text_from_image(image)
-        classes = parser.parse_schedule_text(text, semester_start,
-                                             semester_end)
+        classes = parser.parse_schedule_text(text, semester_start, semester_end)
 
         return {
             "success": True,
             "classes": classes,
             "semester_start": semester_start,
             "semester_end": semester_end,
-            "extracted_text": text[:500]  # First 500 chars for debugging
+            "extracted_text": text[:500],  # First 500 chars for debugging
         }
 
     except Exception as e:
@@ -500,22 +503,24 @@ async def parse_text_schedule(request: Request):
         # Convert to the format expected by the frontend
         classes = []
         for cls in parsed_classes:
-            classes.append({
-                "name": cls["name"],
-                "code": cls["course_number"],
-                "days": cls["days"],
-                "start_time": cls["start_time"],
-                "end_time": cls["end_time"],
-                "location": cls["location"],
-                "instructor": cls["instructor"]
-            })
+            classes.append(
+                {
+                    "name": cls["name"],
+                    "code": cls["course_number"],
+                    "days": cls["days"],
+                    "start_time": cls["start_time"],
+                    "end_time": cls["end_time"],
+                    "location": cls["location"],
+                    "instructor": cls["instructor"],
+                }
+            )
 
         return {
             "success": True,
             "classes": classes,
             "semester_start": semester_start,
             "semester_end": semester_end,
-            "method": "text_parsing"
+            "method": "text_parsing",
         }
 
     except Exception as e:
@@ -536,9 +541,11 @@ async def generate_ics(request: Request):
         print(f"Semester: {semester_start} to {semester_end}")
 
         if not classes:
-            return Response(content='{"error": "No classes to export"}',
-                            status_code=400,
-                            media_type="application/json")
+            return Response(
+                content='{"error": "No classes to export"}',
+                status_code=400,
+                media_type="application/json",
+            )
 
         # Generate ICS content
         ics_content = generate_ics_file(classes, semester_start, semester_end)
@@ -549,10 +556,10 @@ async def generate_ics(request: Request):
             content=ics_content,
             media_type="text/calendar",
             headers={
-                "Content-Disposition":
-                "attachment; filename=uc_berkeley_schedule.ics",
-                "Content-Type": "text/calendar; charset=utf-8"
-            })
+                "Content-Disposition": "attachment; filename=uc_berkeley_schedule.ics",
+                "Content-Type": "text/calendar; charset=utf-8",
+            },
+        )
 
         print("ICS Response created", response.headers, response.status_code)
 
@@ -560,11 +567,14 @@ async def generate_ics(request: Request):
 
     except Exception as e:
         print(f"Error generating ICS: {str(e)}")
-        return Response(content=f'{{"error": "{str(e)}"}}',
-                        status_code=500,
-                        media_type="application/json")
+        return Response(
+            content=f'{{"error": "{str(e)}"}}',
+            status_code=500,
+            media_type="application/json",
+        )
 
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=5000)
+
+    uvicorn.run(app, host="0.0.0.0", port=8080)
