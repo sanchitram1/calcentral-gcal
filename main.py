@@ -77,7 +77,7 @@ async def main_page():
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(textData)
                     });
-                    console.log('***** Response:', await response.json());
+                    console.log('***** Response:', response);
                     
                     const result = await response.json();
                     console.log('***** Result before displayResult:', result);
@@ -240,6 +240,7 @@ async def parse_text_schedule(request: Request):
                     "instructor": cls.instructor,
                 }
             )
+        print("-" * 50)
         print(f"Courses: {courses}")
 
         return {
