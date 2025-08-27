@@ -24,7 +24,7 @@ WORKDIR /app
 
 # Get the requirements from pyproject.toml
 COPY pyproject.toml .
-RUN uv pip sync 
+RUN uv pip sync pyproject.toml
 
 COPY . . 
 CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
