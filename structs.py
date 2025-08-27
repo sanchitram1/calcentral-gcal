@@ -16,7 +16,7 @@ class Course:
     location: str = field(default_factory=str)
     schedule: Schedule = field(default_factory=Schedule)
     instructor: list[str] = field(default_factory=list)
-    
+
     def serialize(self) -> dict:
         """Serialize Course object to JSON-compatible dictionary"""
         return {

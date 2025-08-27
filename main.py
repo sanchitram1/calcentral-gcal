@@ -1,11 +1,12 @@
 import uvicorn
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, Response
-from typing import List, Dict, Any
 
 from ics import generate_ics_file
-from parser import parse_class_schedule, deserialize_courses # Import deserialize_courses
-from structs import Course, Schedule # Import Course and Schedule
+from parser import (  # Import deserialize_courses
+    deserialize_courses,
+    parse_class_schedule,
+)
 
 app = FastAPI(title="UC Berkeley Schedule to Google Calendar")
 
