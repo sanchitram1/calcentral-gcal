@@ -1,6 +1,6 @@
 entrypoint = "main.py"
 run = ["uvicorn", "main:app", "--host", "0.0.0.0", "--reload"]
-modules = ["python-3.13"]
+modules = ["python-3.11", "python-3.13"]
 
 [nix]
 channel = "stable-23_05"
