@@ -1,8 +1,8 @@
-from datetime import datetime, timedelta
-
+import uvicorn
 from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, Response
 
+from ics import generate_ics_file
 from parser import parse_class_schedule
 
 app = FastAPI(title="UC Berkeley Schedule to Google Calendar")
@@ -206,97 +206,6 @@ async def main_page():
     """
 
 
-def generate_ics_file(classes, semester_start_str, semester_end_str):
-    """Generate ICS file content from parsed classes"""
-    import uuid
-
-    # Parse semester dates
-    semester_start = datetime.strptime(semester_start_str, "%Y-%m-%d").date()
-    semester_end = datetime.strptime(semester_end_str, "%Y-%m-%d").date()
-
-    # ICS header
-    ics_lines = [
-        "BEGIN:VCALENDAR",
-        "VERSION:2.0",
-        "PRODID:-//UC Berkeley Schedule//Schedule Planner//EN",
-        "CALSCALE:GREGORIAN",
-        "METHOD:PUBLISH",
-    ]
-
-    # Day name to weekday number mapping
-    day_to_weekday = {
-        "Monday": 0,
-        "Tuesday": 1,
-        "Wednesday": 2,
-        "Thursday": 3,
-        "Friday": 4,
-        "Saturday": 5,
-        "Sunday": 6,
-    }
-
-    for cls in classes:
-        for day in cls.get("days", []):
-            if day not in day_to_weekday:
-                continue
-
-            weekday = day_to_weekday[day]
-
-            # Find the first occurrence of this weekday in the semester
-            current_date = semester_start
-            while current_date.weekday() != weekday:
-                current_date += timedelta(days=1)
-
-            # Parse start and end times
-            start_time_str = cls.get("start_time", "").replace(" ", "")
-            end_time_str = cls.get("end_time", "").replace(" ", "")
-
-            try:
-                start_time = datetime.strptime(start_time_str, "%I:%M%p").time()
-                end_time = datetime.strptime(end_time_str, "%I:%M%p").time()
-            except:
-                # Try without minutes if parsing fails
-                try:
-                    start_time = datetime.strptime(start_time_str, "%I%p").time()
-                    end_time = datetime.strptime(end_time_str, "%I%p").time()
-                except:
-                    continue  # Skip this class if time parsing fails
-
-            # Generate recurring events for each week of the semester
-            event_date = current_date
-            while event_date <= semester_end:
-                start_datetime = datetime.combine(event_date, start_time)
-                end_datetime = datetime.combine(event_date, end_time)
-
-                # Format for ICS (UTC format)
-                start_utc = start_datetime.strftime("%Y%m%dT%H%M%S")
-                end_utc = end_datetime.strftime("%Y%m%dT%H%M%S")
-
-                # Generate unique ID
-                event_id = str(uuid.uuid4())
-
-                # Create event
-                ics_lines.extend(
-                    [
-                        "BEGIN:VEVENT",
-                        f"UID:{event_id}",
-                        f"DTSTART:{start_utc}",
-                        f"DTEND:{end_utc}",
-                        f"SUMMARY:{cls.get('name', 'Class')} - {cls.get('code', '')}",
-                        f"LOCATION:{cls.get('location', '')}",
-                        f"DESCRIPTION:Instructor: {cls.get('instructor', 'TBA')}\\nCourse: {cls.get('code', '')}",
-                        "END:VEVENT",
-                    ]
-                )
-
-                # Move to next week
-                event_date += timedelta(days=7)
-
-    # ICS footer
-    ics_lines.append("END:VCALENDAR")
-
-    return "\r\n".join(ics_lines)
-
-
 @app.post("/parse-text-schedule")
 async def parse_text_schedule(request: Request):
     try:
@@ -318,17 +227,17 @@ async def parse_text_schedule(request: Request):
                 {
                     "name": cls.name,
                     "code": cls.number,
-                    "days": cls.schedule["Days"],
-                    "start_time": cls.schedule["Time"],
-                    "end_time": cls["end_time"],
+                    "days": cls.schedule.days,
+                    "start_time": cls.schedule.start_time,
+                    "end_time": cls.schedule.end_time,
                     "location": cls.location,
-                    "instructor": cls["instructor"],
+                    "instructor": cls.instructor,
                 }
             )
 
         return {
             "success": True,
-            "classes": classes,
+            "classes": courses,
             "semester_start": semester_start,
             "semester_end": semester_end,
             "method": "text_parsing",
@@ -340,8 +249,6 @@ async def parse_text_schedule(request: Request):
 
 @app.post("/generate-ics")
 async def generate_ics(request: Request):
-    from fastapi.responses import Response
-
     try:
         data = await request.json()
         classes = data.get("classes", [])
@@ -386,6 +293,4 @@ async def generate_ics(request: Request):
 
 
 if __name__ == "__main__":
-    import uvicorn
-
     uvicorn.run(app, host="0.0.0.0", port=8080)
