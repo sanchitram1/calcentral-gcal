@@ -99,11 +99,12 @@ async def main_page():
 
                 let html = '<div class="schedule-preview"><h3>📚 Extracted Classes:</h3>';
                 result.classes.forEach(cls => {
+                    const instructorList = Array.isArray(cls.instructor) ? cls.instructor.join(', ') : cls.instructor || 'TBA';
                     html += `
                         <div class="class-item">
                             <strong>${cls.name}</strong><br>
-                            📅 ${cls.days} | 🕐 ${cls.start_time} - ${cls.end_time}<br>
-                            📍 ${cls.location} | 👨‍🏫 ${cls.instructor}
+                            📅 ${cls.schedule.days} | 🕐 ${cls.schedule.start_time} - ${cls.schedule.end_time}<br>
+                            📍 ${cls.location} | 👨‍🏫 ${instructorList}
                         </div>
                     `;
                 });

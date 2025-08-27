@@ -25,6 +25,27 @@ def handle_instructor(instructors: list[str]) -> str:
     return "\n".join(instructors)
 
 
+def parse_days(days_str: str) -> list[str]:
+    """Parse day string like 'TTh' or 'MWF' into individual day codes"""
+    days = []
+    i = 0
+    while i < len(days_str):
+        # Check for two-character codes first
+        if i + 1 < len(days_str):
+            two_char = days_str[i:i+2]
+            if two_char in DAY_TO_WEEKDAY:
+                days.append(two_char)
+                i += 2
+                continue
+        
+        # Single character code
+        if days_str[i] in DAY_TO_WEEKDAY:
+            days.append(days_str[i])
+        i += 1
+    
+    return days
+
+
 def generate_ics_file(
     classes: list[Course], semester_start_str: str, semester_end_str: str
 ) -> str:
@@ -45,7 +66,9 @@ def generate_ics_file(
 
     for cls in classes:
         instructor = handle_instructor(cls.instructor)
-        for day in cls.schedule.days:
+        parsed_days = parse_days(cls.schedule.days)
+        
+        for day in parsed_days:
             if day not in DAY_TO_WEEKDAY:
                 continue
 
