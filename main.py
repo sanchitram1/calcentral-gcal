@@ -12,31 +12,30 @@ app = FastAPI(title="UC Berkeley Schedule to Google Calendar")
 
 @app.get("/")
 async def health_check():
-    return {"status": "healthy"}
+    return {"status": "healthy", "timestamp": "2025-08-28"}
 
 
-@app.get("/app", response_class=HTMLResponse)
+@app.get("/app", response_class=HTMLResponse, status_code=200)
 async def main_page():
-    return """
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>UC Berkeley Schedule Parser</title>
-        <style>
-            body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
-            .text-area { border: 2px solid #ccc; padding: 20px; margin: 20px 0; border-radius: 4px; }
-            .form-group { margin: 15px 0; }
-            label { display: block; margin-bottom: 5px; font-weight: bold; }
-            input, select, textarea { padding: 8px; margin: 5px 0; width: 100%; max-width: 300px; }
-            textarea { max-width: 100%; height: 200px; }
-            button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
-            button:hover { background: #0056b3; }
-            .schedule-preview { background: #f8f9fa; padding: 15px; margin: 15px 0; border-radius: 4px; }
-            .class-item { background: white; padding: 10px; margin: 5px 0; border-left: 4px solid #007bff; }
-            .error { color: red; }
-            .success { color: green; }
-        </style>
-    </head>
+    return """<!DOCTYPE html>
+<html>
+<head>
+    <title>UC Berkeley Schedule Parser</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .text-area { border: 2px solid #ccc; padding: 20px; margin: 20px 0; border-radius: 4px; }
+        .form-group { margin: 15px 0; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select, textarea { padding: 8px; margin: 5px 0; width: 100%; max-width: 300px; }
+        textarea { max-width: 100%; height: 200px; }
+        button { background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .schedule-preview { background: #f8f9fa; padding: 15px; margin: 15px 0; border-radius: 4px; }
+        .class-item { background: white; padding: 10px; margin: 5px 0; border-left: 4px solid #007bff; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
     <body>
         <h1>🗓️ UC Berkeley Schedule Parser</h1>
         <p>Paste your schedule text from UC Berkeley Schedule Planner to parse your class schedule!</p>
