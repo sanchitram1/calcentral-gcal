@@ -11,6 +11,11 @@ from parser import (  # Import deserialize_courses
 app = FastAPI(title="UC Berkeley Schedule to Google Calendar")
 
 
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy"}
+
+
 @app.get("/", response_class=HTMLResponse)
 async def main_page():
     return """
