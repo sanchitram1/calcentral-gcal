@@ -4,19 +4,18 @@ from fastapi.responses import HTMLResponse, Response
 
 from ics import generate_ics_file
 from parser import (  # Import deserialize_courses
-    deserialize_courses,
-    parse_class_schedule,
+    deserialize_courses, parse_class_schedule,
 )
 
 app = FastAPI(title="UC Berkeley Schedule to Google Calendar")
 
 
-@app.get("/health")
+@app.get("/")
 async def health_check():
     return {"status": "healthy"}
 
 
-@app.get("/", response_class=HTMLResponse)
+@app.get("/app", response_class=HTMLResponse)
 async def main_page():
     return """
     <!DOCTYPE html>
@@ -267,13 +266,15 @@ async def generate_ics(request: Request):
         course_objects = deserialize_courses(classes_data)
 
         # Generate ICS content
-        ics_content = generate_ics_file(course_objects, semester_start, semester_end)
+        ics_content = generate_ics_file(course_objects, semester_start,
+                                        semester_end)
 
         response = Response(
             content=ics_content,
             media_type="text/calendar",
             headers={
-                "Content-Disposition": "attachment; filename=uc_berkeley_schedule.ics",
+                "Content-Disposition":
+                "attachment; filename=uc_berkeley_schedule.ics",
                 "Content-Type": "text/calendar; charset=utf-8",
             },
         )
